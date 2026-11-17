@@ -62,10 +62,20 @@ fn clip(s: &str) -> &str {
     }
 }
 
+/// Discord rejects details/state shorter than 2 characters (e.g. a 1-letter project name).
+fn min2(s: &str) -> String {
+    let c = clip(s);
+    if c.chars().count() < 2 {
+        format!("{c}\u{200B}")
+    } else {
+        c.to_string()
+    }
+}
+
 pub fn activity_json(a: &Activity) -> Value {
-    let mut act = json!({ "details": clip(&a.details) });
+    let mut act = json!({ "details": min2(&a.details) });
     if !a.state.is_empty() {
-        act["state"] = json!(clip(&a.state));
+        act["state"] = json!(min2(&a.state));
     }
     if let Some(s) = a.start_secs {
         act["timestamps"] = json!({ "start": s });
@@ -234,6 +244,16 @@ mod tests {
         assert_eq!((op, p, used), (1, &b"{\"a\":1}"[..], 15));
         assert!(decode_frame(&out[..10]).is_none()); // truncated
         assert!(decode_frame(&out[..3]).is_none());
+    }
+
+    #[test]
+    fn short_strings_are_padded_to_two_chars() {
+        let a = Activity { details: "x".into(), state: "y".into(), ..Default::default() };
+        let v = activity_json(&a);
+        assert!(v["details"].as_str().unwrap().chars().count() >= 2);
+        assert!(v["state"].as_str().unwrap().chars().count() >= 2);
+        let long = Activity { details: "é".repeat(300), ..Default::default() };
+        assert_eq!(activity_json(&long)["details"].as_str().unwrap().chars().count(), 128);
     }
 
     #[test]

@@ -186,6 +186,12 @@ fn image_path(pid: u32, buf: &mut [u16; 520]) -> Option<String> {
     }
 }
 
+/// Full image path of a process (None if it cannot be opened).
+pub fn process_image(pid: u32) -> Option<String> {
+    let mut buf = [0u16; 520];
+    image_path(pid, &mut buf)
+}
+
 /// PIDs of Claude *Desktop* processes (Claude.exe that is not the bundled Claude Code CLI).
 pub fn claude_desktop_pids(out: &mut Vec<u32>) {
     out.clear();

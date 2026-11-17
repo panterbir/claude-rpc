@@ -117,7 +117,9 @@ fn status() -> i32 {
     println!("Otomatik baslat: {}", if win::run_key_get(install::RUN_VALUE).is_some() { "evet" } else { "hayir" });
     let st = std::fs::read_to_string(dir.join("status.json")).ok().and_then(|t| serde_json::from_str::<Value>(&t).ok());
     let pid = st.as_ref().and_then(|v| v["pid"].as_u64()).map(|p| p as u32);
-    let alive = pid.is_some_and(win::pid_alive);
+    let alive = pid.is_some_and(|p| {
+        win::pid_alive(p) && win::process_image(p).is_some_and(|i| i.to_ascii_lowercase().contains("claude-rpc"))
+    });
     println!("Daemon       : {}", if alive { format!("calisiyor (pid {})", pid.unwrap_or(0)) } else { "calismiyor".into() });
     if let (true, Some(v)) = (alive, &st) {
         println!("Discord      : {}", if v["connected"].as_bool() == Some(true) { "bagli" } else { "bagli degil" });

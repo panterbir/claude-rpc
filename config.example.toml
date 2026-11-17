@@ -12,7 +12,7 @@ stale_minutes = 60
 
 # Gosterilen metinler
 active_text = "Aktif"
-idle_text = "Bosta"
+idle_text = "Boşta"
 chat_details = "Claude ile sohbet ediyor"
 
 # Developer Portal'da yukledigin asset anahtarlari

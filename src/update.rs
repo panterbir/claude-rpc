@@ -104,14 +104,23 @@ pub fn apply(rel: &Release) -> Result<PathBuf, String> {
 }
 
 /// Start the new exe (it waits for this process to end) and exit.
-fn restart(exe: &Path) -> ! {
-    let _ = Command::new(exe)
+/// Only exits when the new process really started; otherwise the old one keeps serving.
+fn restart(exe: &Path) {
+    let spawned = Command::new(exe)
         .arg("daemon")
         .env("CLAUDE_RPC_WAIT_PID", std::process::id().to_string())
         .creation_flags(0x0000_0008 | NO_WINDOW | 0x0000_0200)
         .spawn();
-    tray::remove_icon();
-    std::process::exit(0)
+    match spawned {
+        Ok(_) => {
+            tray::remove_icon();
+            std::process::exit(0)
+        }
+        Err(e) => tray::message_box(
+            &format!("Güncelleme indirildi ama yeni sürüm başlatılamadı ({e}). Tepsiden Çıkış yapıp claude-rpc.exe'yi tekrar aç."),
+            "Claude RPC",
+        ),
+    }
 }
 
 /// Remove leftovers of a previous update.

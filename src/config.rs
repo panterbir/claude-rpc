@@ -25,7 +25,7 @@ impl Default for Config {
             idle_secs: 5 * 60,
             stale_secs: 60 * 60,
             active_text: "Aktif".into(),
-            idle_text: "Bosta".into(),
+            idle_text: "Boşta".into(),
             chat_details: "Claude ile sohbet ediyor".into(),
             large_image: "https://host-gif.vercel.app/claude-spin.gif".into(),
             small_active: "active".into(),

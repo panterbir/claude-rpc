@@ -162,7 +162,11 @@ pub fn read_daemon_pid(dir: &Path) -> Option<u32> {
 
 pub fn stop_daemon(dir: &Path) -> bool {
     match read_daemon_pid(dir) {
-        Some(pid) if win::pid_alive(pid) => {
+        // pid_alive alone is not enough: Windows reuses PIDs, so confirm it is really claude-rpc
+        Some(pid)
+            if win::pid_alive(pid)
+                && win::process_image(pid).is_some_and(|p| p.to_ascii_lowercase().contains("claude-rpc")) =>
+        {
             let ok = win::kill_pid(pid);
             std::thread::sleep(std::time::Duration::from_millis(300));
             ok
