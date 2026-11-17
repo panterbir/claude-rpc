@@ -99,10 +99,10 @@ pub fn wide(s: &str) -> Vec<u16> {
 
 /// Console subcommands: the binary is a GUI-subsystem exe, so attach to the parent
 /// console (if any) and wire stdout/stderr to it unless they are already redirected.
-pub fn attach_console() {
+pub fn attach_console() -> bool {
     unsafe {
         if AttachConsole(0xFFFF_FFFF) == 0 {
-            return; // no parent console (double click, redirected, ...)
+            return false; // no parent console (double click, redirected, ...)
         }
         for (std_id, _name) in [(0xFFFF_FFF5u32, "out"), (0xFFFF_FFF4u32, "err")] {
             // STD_OUTPUT_HANDLE = -11, STD_ERROR_HANDLE = -12
@@ -114,6 +114,7 @@ pub fn attach_console() {
             }
         }
     }
+    true
 }
 
 /// Returns true if this call created the mutex (i.e. we are the only instance).

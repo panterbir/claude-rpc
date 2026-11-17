@@ -5,6 +5,7 @@ use crate::config::{self, Config};
 use crate::discord::{Activity, Conn, Incoming};
 use crate::git;
 use crate::state::{self, Phase, State};
+use crate::tray;
 use crate::win;
 use serde_json::json;
 use std::fs;
@@ -52,18 +53,24 @@ struct Daemon {
     last_error: String,
 }
 
-pub fn run() -> i32 {
+/// `interactive` = started by double click (no arguments): tell the user if it is already running.
+pub fn run(interactive: bool) -> i32 {
     let dir = config::data_dir();
     let _ = fs::create_dir_all(&dir);
     let cfg = config::load();
     if cfg.client_id.is_empty() {
         write_status(&dir, false, "", "", config::MISSING_ID_MSG);
         log(&dir, config::MISSING_ID_MSG);
+        tray::message_box(config::MISSING_ID_MSG, "Claude RPC");
         return 1;
     }
     if !win::single_instance("Local\\claude-rpc-daemon") {
+        if interactive {
+            tray::message_box("Claude RPC zaten çalışıyor. Sağ alttaki tepsideki (^) turuncu yıldız simgesine sağ tıklayarak yönetebilirsin.", "Claude RPC");
+        }
         return 0;
     }
+    let notify = cfg.notify_on_start;
     let mut d = Daemon {
         state_path: state::state_path(&dir),
         dir,
@@ -93,11 +100,19 @@ pub fn run() -> i32 {
         status_key: String::new(),
         last_error: String::new(),
     };
-    d.main_loop()
+    // Discord loop on a worker thread; the tray (message pump) owns the main thread.
+    std::thread::spawn(move || d.main_loop());
+    if !tray::run(notify) {
+        log(&config::data_dir(), "tepsi simgesi olusturulamadi");
+        loop {
+            std::thread::sleep(Duration::from_secs(3600)); // keep serving without a tray
+        }
+    }
+    0
 }
 
 impl Daemon {
-    fn main_loop(&mut self) -> ! {
+    fn main_loop(&mut self) {
         let mut tick: u32 = 0;
         loop {
             let now = state::now_ms();
@@ -215,7 +230,7 @@ impl Daemon {
         } else {
             false
         };
-        self.desired = if have { Some(a) } else { None };
+        self.desired = if have && !tray::PAUSED.load(std::sync::atomic::Ordering::Relaxed) { Some(a) } else { None };
     }
 
     fn fill_assets(&self, a: &mut Activity, ph: Phase) {

@@ -23,3 +23,6 @@ large_text = "Claude"
 
 # Git branch bilgisini goster
 show_branch = true
+
+# Baslarken "Claude RPC calisiyor" bildirimi goster
+notify_on_start = true

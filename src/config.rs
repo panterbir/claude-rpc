@@ -14,6 +14,7 @@ pub struct Config {
     pub small_idle: String,
     pub large_text: String,
     pub show_branch: bool,
+    pub notify_on_start: bool,
 }
 
 impl Default for Config {
@@ -30,6 +31,7 @@ impl Default for Config {
             small_idle: "idle".into(),
             large_text: "Claude".into(),
             show_branch: true,
+            notify_on_start: true,
         }
     }
 }
@@ -79,6 +81,7 @@ pub fn parse(text: &str, cfg: &mut Config) {
             "small_image_idle" => cfg.small_idle = v,
             "large_text" => cfg.large_text = v,
             "show_branch" => cfg.show_branch = !matches!(v.as_str(), "false" | "0" | "no"),
+            "notify_on_start" => cfg.notify_on_start = !matches!(v.as_str(), "false" | "0" | "no"),
             _ => {}
         }
     }

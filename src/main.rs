@@ -7,6 +7,7 @@ mod discord;
 mod git;
 mod install;
 mod state;
+mod tray;
 mod win;
 
 use serde_json::Value;
@@ -20,13 +21,16 @@ fn run() -> i32 {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let cmd = args.first().map(String::as_str).unwrap_or("help");
     match cmd {
-        "daemon" => daemon::run(),
+        "daemon" => daemon::run(false),
         "hook" => {
             hook(args.get(1).map(String::as_str));
             0 // never block Claude Code
         }
         other => {
-            win::attach_console();
+            let console = win::attach_console();
+            if args.is_empty() && !console {
+                return daemon::run(true); // double click: start the tray app
+            }
             cli(other, &args[1..])
         }
     }

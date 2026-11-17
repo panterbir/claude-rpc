@@ -40,6 +40,19 @@ Gösterilen:
 
 > **Not (konsol çıktısı):** exe `windows` alt sisteminde olduğundan (hook çalışırken konsol penceresi çakmasın diye) kabuk komutu beklemez. cmd/PowerShell'de çıktıyı düzgün görmek için `claude-rpc status | more` (PowerShell: `| Out-String`) kullan.
 
+### Tepsi simgesi (arayüz)
+
+Daemon çalışırken sağ alttaki bildirim alanında (gizliyse `^` okunun içinde) turuncu bir yıldız simgesi durur. Başlarken "Claude RPC çalışıyor" bildirimi çıkar (`notify_on_start = false` ile kapanır).
+Simgeye sağ (veya sol) tıklayınca menü açılır:
+
+- durum satırı: `Bağlı · proje / Aktif`, `Discord'a bağlı değil`, `Duraklatıldı`
+- **Presence'ı duraklat / devam ettir** (duraklatınca Discord'daki durum temizlenir)
+- **Ayar dosyasını aç** (yoksa örnek config oluşturulup Not Defteri'nde açılır)
+- **Veri klasörünü aç**
+- **Çıkış** (daemon kapanır, bir sonraki oturum açılışına kadar çalışmaz)
+
+`claude-rpc.exe`'ye çift tıklamak da uygulamayı başlatır; zaten çalışıyorsa bunu söyleyen bir pencere gösterir. Tepsi ikinci bir iş parçacığı (ana iş parçacığı mesaj döngüsünü çalıştırır, Discord döngüsü ayrı thread'dedir); RAM ölçümü tepsiyle birlikte de aynı: ~0,8 MB working set, 268 KB private working set.
+
 ### Komutlar
 
 ```
