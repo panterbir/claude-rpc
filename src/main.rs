@@ -19,6 +19,9 @@ fn main() {
 
 fn run() -> i32 {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) != Some("hook") {
+        config::trace(&format!("basladi v{} args={:?}", env!("CARGO_PKG_VERSION"), args));
+    }
     let cmd = args.first().map(String::as_str).unwrap_or("help");
     match cmd {
         "daemon" => daemon::run(false),
@@ -28,9 +31,11 @@ fn run() -> i32 {
         }
         other => {
             let console = win::attach_console();
-            if args.is_empty() && !console {
-                return daemon::run(true); // double click: start the tray app
+            if args.is_empty() {
+                // double click or plain `claude-rpc.exe` in a terminal: start the tray app
+                return daemon::run(true);
             }
+            let _ = console;
             cli(other, &args[1..])
         }
     }
@@ -89,6 +94,7 @@ fn cli(cmd: &str, rest: &[String]) -> i32 {
                  claude-rpc install [--settings <yol>] [--no-registry] [--no-start] [--in-place]\n  \
                  claude-rpc uninstall [--settings <yol>] [--no-registry] [--no-start]\n  \
                  claude-rpc status | start | stop\n  \
+                 claude-rpc               (argumansiz: tepsi uygulamasini baslatir)\n  \
                  claude-rpc daemon        (arka plan sureci)\n  \
                  claude-rpc hook <olay>   (Claude Code hook'lari cagirir)"
             );

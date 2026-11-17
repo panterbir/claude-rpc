@@ -58,10 +58,15 @@ pub fn run(interactive: bool) -> i32 {
     let dir = config::data_dir();
     let _ = fs::create_dir_all(&dir);
     let cfg = config::load();
+    config::trace(&format!("config yuklendi, client_id {}", if cfg.client_id.is_empty() { "YOK" } else { "var" }));
     if cfg.client_id.is_empty() {
         write_status(&dir, false, "", "", config::MISSING_ID_MSG);
         log(&dir, config::MISSING_ID_MSG);
-        tray::message_box(config::MISSING_ID_MSG, "Claude RPC");
+        tray::message_box(
+            &format!("{}\n\nTamam'a basınca ayar dosyası Not Defteri'nde açılacak: client_id = \"...\" satırını doldurup kaydet, sonra Claude RPC'yi tekrar başlat.", config::MISSING_ID_MSG),
+            "Claude RPC",
+        );
+        tray::open_config();
         return 1;
     }
     if !win::single_instance("Local\\claude-rpc-daemon") {
@@ -102,8 +107,11 @@ pub fn run(interactive: bool) -> i32 {
     };
     // Discord loop on a worker thread; the tray (message pump) owns the main thread.
     std::thread::spawn(move || d.main_loop());
+    config::trace("tepsi baslatiliyor");
     if !tray::run(notify) {
+        config::trace("tepsi olusturulamadi");
         log(&config::data_dir(), "tepsi simgesi olusturulamadi");
+        tray::message_box("Tepsi simgesi oluşturulamadı; Claude RPC simgesiz olarak arka planda çalışacak. Kapatmak için Görev Yöneticisi'nden claude-rpc.exe sürecini sonlandır.", "Claude RPC");
         loop {
             std::thread::sleep(Duration::from_secs(3600)); // keep serving without a tray
         }

@@ -225,7 +225,7 @@ fn open(file: &str, params: Option<&str>) {
     }
 }
 
-fn open_config() {
+pub fn open_config() {
     let dir = config::data_dir();
     let path = dir.join("config.toml");
     if !path.exists() {

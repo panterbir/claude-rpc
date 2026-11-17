@@ -36,6 +36,11 @@ impl Default for Config {
     }
 }
 
+/// Default Discord Application ID ("AI Coding", assets: claude / active / idle).
+/// Application IDs are public identifiers, not secrets. Override with `client_id` in
+/// config.toml or the CLAUDE_RPC_CLIENT_ID environment variable to use your own app.
+pub const DEFAULT_CLIENT_ID: &str = "1572334563114352660";
+
 pub fn data_dir() -> PathBuf {
     let base = std::env::var_os("LOCALAPPDATA")
         .map(PathBuf::from)
@@ -87,6 +92,20 @@ pub fn parse(text: &str, cfg: &mut Config) {
     }
 }
 
+/// Append one line to startup.log (diagnostics for "nothing happens" reports).
+pub fn trace(msg: &str) {
+    use std::io::Write;
+    let dir = data_dir();
+    let _ = std::fs::create_dir_all(&dir);
+    let p = dir.join("startup.log");
+    if std::fs::metadata(&p).map(|m| m.len() > 32 * 1024).unwrap_or(false) {
+        let _ = std::fs::remove_file(&p);
+    }
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&p) {
+        let _ = writeln!(f, "[{}] {}", crate::state::now_ms() / 1000, msg);
+    }
+}
+
 pub fn config_paths() -> Vec<PathBuf> {
     let mut v = vec![data_dir().join("config.toml")];
     if let Ok(exe) = std::env::current_exe() {
@@ -110,6 +129,9 @@ pub fn load() -> Config {
         if !id.trim().is_empty() {
             cfg.client_id = id.trim().to_string();
         }
+    }
+    if cfg.client_id.is_empty() {
+        cfg.client_id = DEFAULT_CLIENT_ID.to_string(); // works out of the box
     }
     cfg
 }

@@ -21,11 +21,11 @@ Gösterilen:
    - `idle` (küçük, boştayken)
 
    Asset'ler Discord'da yayılması birkaç dakika sürebilir. Farklı adlar kullanırsan `config.toml`'dan değiştir.
-3. **Application ID'yi ver** — biri yeterli:
+3. **Application ID (isteğe bağlı)** — hiçbir şey yapmazsan uygulama, içine gömülü varsayılan uygulamayı kullanır (Discord'da "AI Coding" olarak görünür, görseller hazır). Application ID gizli bir bilgi değil, herkese açık bir tanımlayıcıdır. Kendi uygulamanı/görsellerini kullanmak istersen (1. ve 2. adımlar) biri yeterli:
    - `%LOCALAPPDATA%\claude-rpc\config.toml` dosyasına `client_id = "123..."` (örnek: [`config.example.toml`](config.example.toml)), veya
    - kullanıcı ortam değişkeni `CLAUDE_RPC_CLIENT_ID` (config'i ezer).
 
-   ID yoksa daemon başlamaz ve `status` / `status.json` / `install` açık bir hata verir. ID koda gömülü değildir.
+   Ayar verilmezse gömülü varsayılan ID kullanılır; bu yüzden herkes ekstra kurulum yapmadan çalıştırabilir.
 4. **Derle** (Rust + MSVC Build Tools gerekir) ya da `dist\claude-rpc.exe`'yi kullan:
    ```
    cargo build --release
