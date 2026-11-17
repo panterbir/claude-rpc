@@ -53,6 +53,11 @@ Simgeye sağ (veya sol) tıklayınca menü açılır:
 
 `claude-rpc.exe`'ye çift tıklamak da uygulamayı başlatır; zaten çalışıyorsa bunu söyleyen bir pencere gösterir. Tepsi ikinci bir iş parçacığı (ana iş parçacığı mesaj döngüsünü çalıştırır, Discord döngüsü ayrı thread'dedir); RAM ölçümü tepsiyle birlikte de aynı: ~0,8 MB working set, 268 KB private working set.
 
+### Otomatik güncelleme
+
+Açılıştan ~25 sn sonra ve sonra 6 saatte bir GitHub Releases'te daha yeni bir sürüm var mı diye bakılır. Varsa **"Yeni sürümü var, güncellemek ister misin?"** penceresi çıkar. **Evet**'e basınca yeni `claude-rpc.exe` indirilir, SHA-256 özeti GitHub'daki ile doğrulanır, çalışan exe `.old` olarak yeniden adlandırılıp yenisi yerine konur ve uygulama kendini yeniden başlatır. **Hayır** dersen aynı sürüm için bir daha sormaz (bir sonraki açılışa kadar). Tepsi menüsündeki **Güncellemeleri denetle** her zaman hemen kontrol eder.
+İndirme Windows'la gelen `curl.exe` ile yapılır (uygulamaya TLS/HTTP kütüphanesi eklenmedi). Kapatmak için `check_updates = false`. Terminalden: `claude-rpc update` (denetle) / `claude-rpc update --yes` (güncelle), `claude-rpc version`.
+
 ### Komutlar
 
 ```

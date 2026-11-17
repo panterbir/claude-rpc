@@ -6,6 +6,7 @@ use crate::discord::{Activity, Conn, Incoming};
 use crate::git;
 use crate::state::{self, Phase, State};
 use crate::tray;
+use crate::update;
 use crate::win;
 use serde_json::json;
 use std::fs;
@@ -69,6 +70,8 @@ pub fn run(interactive: bool) -> i32 {
         tray::open_config();
         return 1;
     }
+    update::wait_for_previous();
+    update::cleanup();
     if !win::single_instance("Local\\claude-rpc-daemon") {
         if interactive {
             tray::message_box("Claude RPC zaten çalışıyor. Sağ alttaki tepsideki (^) turuncu yıldız simgesine sağ tıklayarak yönetebilirsin.", "Claude RPC");
@@ -76,6 +79,9 @@ pub fn run(interactive: bool) -> i32 {
         return 0;
     }
     let notify = cfg.notify_on_start;
+    if cfg.check_updates {
+        std::thread::spawn(update::background_loop);
+    }
     let mut d = Daemon {
         state_path: state::state_path(&dir),
         dir,

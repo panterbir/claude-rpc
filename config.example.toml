@@ -25,5 +25,8 @@ large_text = "Claude"
 # Git branch bilgisini goster
 show_branch = true
 
+# GitHub'da yeni surum var mi diye denetle (acilista ve 6 saatte bir); varsa sorar
+check_updates = true
+
 # Baslarken "Claude RPC calisiyor" bildirimi goster
 notify_on_start = true

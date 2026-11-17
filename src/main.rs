@@ -8,6 +8,7 @@ mod git;
 mod install;
 mod state;
 mod tray;
+mod update;
 mod win;
 
 use serde_json::Value;
@@ -62,6 +63,11 @@ fn cli(cmd: &str, rest: &[String]) -> i32 {
         "install" => install::install(rest),
         "uninstall" => install::uninstall(rest),
         "status" => status(),
+        "version" | "--version" | "-V" => {
+            println!("claude-rpc v{}", update::CURRENT);
+            0
+        }
+        "update" => update::cli(rest.iter().any(|a| a == "--yes" || a == "-y")),
         "start" => {
             let cfg = config::load();
             if cfg.client_id.is_empty() {

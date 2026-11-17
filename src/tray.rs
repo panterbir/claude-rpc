@@ -32,6 +32,8 @@ const ID_PAUSE: usize = 2;
 const ID_CONFIG: usize = 3;
 const ID_FOLDER: usize = 4;
 const ID_QUIT: usize = 5;
+const ID_UPDATE: usize = 6;
+static HWND_VAL: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
 #[repr(C)]
 struct POINT {
@@ -133,6 +135,22 @@ extern "system" {
 }
 
 /// Modal info box (used for fatal setup problems; the exe has no console).
+/// Yes/No question (topmost); true = Yes.
+pub fn ask_yes_no(text: &str, caption: &str) -> bool {
+    // MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND | MB_TOPMOST
+    unsafe { MessageBoxW(std::ptr::null_mut(), wide(text).as_ptr(), wide(caption).as_ptr(), 0x4 | 0x20 | 0x10000 | 0x40000) == 6 }
+}
+
+/// Remove the tray icon (called right before the process exits for an update).
+pub fn remove_icon() {
+    let h = HWND_VAL.load(Ordering::Relaxed);
+    if h != 0 {
+        unsafe {
+            Shell_NotifyIconW(NIM_DELETE, &nid(h as HANDLE, ICON));
+        }
+    }
+}
+
 pub fn message_box(text: &str, caption: &str) {
     unsafe {
         MessageBoxW(std::ptr::null_mut(), wide(text).as_ptr(), wide(caption).as_ptr(), 0x40); // MB_ICONINFORMATION
@@ -244,6 +262,7 @@ unsafe fn show_menu(hwnd: HANDLE) {
     AppendMenuW(menu, 0, ID_PAUSE, wide(if paused { "Presence'ı devam ettir" } else { "Presence'ı duraklat" }).as_ptr());
     AppendMenuW(menu, 0, ID_CONFIG, wide("Ayar dosyasını aç (config.toml)").as_ptr());
     AppendMenuW(menu, 0, ID_FOLDER, wide("Veri klasörünü aç").as_ptr());
+    AppendMenuW(menu, 0, ID_UPDATE, wide(&format!("Güncellemeleri denetle (v{})", crate::update::CURRENT)).as_ptr());
     AppendMenuW(menu, MF_SEPARATOR, 0, std::ptr::null());
     AppendMenuW(menu, 0, ID_QUIT, wide("Çıkış (Claude RPC'yi kapat)").as_ptr());
     let mut pt = POINT { x: 0, y: 0 };
@@ -258,6 +277,9 @@ unsafe fn show_menu(hwnd: HANDLE) {
         }
         ID_CONFIG => open_config(),
         ID_FOLDER => open(&config::data_dir().to_string_lossy(), None),
+        ID_UPDATE => {
+            std::thread::spawn(crate::update::manual_check); // dialogs must not block the message pump
+        }
         ID_QUIT => {
             Shell_NotifyIconW(NIM_DELETE, &nid(hwnd, ICON));
             PostQuitMessage(0);
@@ -313,6 +335,7 @@ pub fn run(notify_on_start: bool) -> bool {
         if hwnd.is_null() {
             return false;
         }
+        HWND_VAL.store(hwnd as usize, Ordering::Relaxed);
         add_icon(hwnd, NOTIFY.load(Ordering::Relaxed));
         let mut msg: MSG = std::mem::zeroed();
         while GetMessageW(&mut msg, std::ptr::null_mut(), 0, 0) > 0 {
