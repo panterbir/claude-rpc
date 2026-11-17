@@ -26,7 +26,7 @@ impl Default for Config {
             active_text: "Aktif".into(),
             idle_text: "Bosta".into(),
             chat_details: "Claude ile sohbet ediyor".into(),
-            large_image: "claude".into(),
+            large_image: "https://host-gif.vercel.app/claude-spin.gif".into(),
             small_active: "active".into(),
             small_idle: "idle".into(),
             large_text: "Claude".into(),

@@ -76,7 +76,7 @@ claude-rpc hook <olay>   # Claude Code hook'u, stdin'den JSON okur
 | `stale_minutes` | `60` | bu süreden sonra oturum bayat, presence temizlenir |
 | `active_text` / `idle_text` | `Aktif` / `Bosta` | state metni |
 | `chat_details` | `Claude ile sohbet ediyor` | masaüstü sohbet modunda details |
-| `large_image`, `small_image_active`, `small_image_idle`, `large_text` | `claude`, `active`, `idle`, `Claude` | asset anahtarları |
+| `large_image`, `small_image_active`, `small_image_idle`, `large_text` | GIF linki, `active`, `idle`, `Claude` | asset anahtarı **veya** herkese açık görsel linki (varsayılan: hareketli GIF, Discord masaüstünde döner; sabit görsel için `claude`) |
 | `show_branch` | `true` | branch'i göster |
 
 Config sadece daemon açılırken okunur; değiştirince `claude-rpc stop` + `claude-rpc start`.

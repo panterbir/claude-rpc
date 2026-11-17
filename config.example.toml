@@ -16,7 +16,8 @@ idle_text = "Bosta"
 chat_details = "Claude ile sohbet ediyor"
 
 # Developer Portal'da yukledigin asset anahtarlari
-large_image = "claude"
+# Varsayilan: hareketli GIF linki. Sabit gorsel icin asset anahtari yaz: large_image = "claude"
+large_image = "https://host-gif.vercel.app/claude-spin.gif"
 small_image_active = "active"
 small_image_idle = "idle"
 large_text = "Claude"
