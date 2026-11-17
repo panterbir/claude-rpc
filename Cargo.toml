@@ -1,0 +1,20 @@
+[package]
+name = "claude-rpc"
+version = "0.1.0"
+edition = "2021"
+description = "Discord Rich Presence for Claude (Code + Desktop), tiny Windows daemon"
+
+[[bin]]
+name = "claude-rpc"
+path = "src/main.rs"
+
+[dependencies]
+# Tek bagimlilik. preserve_order: settings.json anahtar sirasini korumak icin.
+serde_json = { version = "1", features = ["preserve_order"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,25 @@
+# claude-rpc yapilandirmasi. Kopyala:  %LOCALAPPDATA%\claude-rpc\config.toml
+# (ya da claude-rpc.exe ile ayni klasore config.toml)
+
+# Discord Developer Portal -> uygulamanin "Application ID" degeri (ZORUNLU).
+# Alternatif: CLAUDE_RPC_CLIENT_ID ortam degiskeni (config'i ezer).
+client_id = ""
+
+# Son olaydan bu kadar dakika sonra "Bosta" gorunur
+idle_minutes = 5
+# Son olaydan bu kadar dakika sonra oturum bayat sayilir ve presence temizlenir
+stale_minutes = 60
+
+# Gosterilen metinler
+active_text = "Aktif"
+idle_text = "Bosta"
+chat_details = "Claude ile sohbet ediyor"
+
+# Developer Portal'da yukledigin asset anahtarlari
+large_image = "claude"
+small_image_active = "active"
+small_image_idle = "idle"
+large_text = "Claude"
+
+# Git branch bilgisini goster
+show_branch = true

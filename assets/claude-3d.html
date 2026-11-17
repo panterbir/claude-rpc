@@ -1,0 +1,103 @@
+<title>Dönen Claude Logosu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* layout: tek tuval, siyah zemin, ortada dönen 3B yıldız */
+  :root { --bg:#000; --fg:#a8a29a; --accent:#d97757; color-scheme: dark; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--fg); margin: 0; overflow: hidden;
+         font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hint { position: fixed; left: 0; right: 0; bottom: 0; text-align: center;
+          padding: 12px max(16px, env(safe-area-inset-left, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px));
+          letter-spacing: .04em; pointer-events: none; }
+</style>
+<canvas id="c"></canvas>
+<div class="hint">sürükle: döndür · bırak: kendi kendine dönsün</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  var canvas = document.getElementById('c');
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 1);
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 0, 11);
+
+  // Işıklar
+  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  var key = new THREE.DirectionalLight(0xffe2d2, 1.15); key.position.set(4, 5, 6); scene.add(key);
+  var rim = new THREE.DirectionalLight(0x7aa7ff, 0.6); rim.position.set(-6, -2, -4); scene.add(rim);
+  var warm = new THREE.PointLight(0xff8a5c, 0.8, 30); warm.position.set(0, 0, 7); scene.add(warm);
+
+  // Logo: farklı uzunlukta yuvarlak uçlu ışınlar
+  // Tek parça, kalın ve pahlı (extrude) yıldız: kama biçimli ışınlar, düz uçlar
+  var logo = new THREE.Group();
+  var N = 12;
+  var lens = [3.1, 2.2, 2.9, 2.0, 3.2, 2.3, 2.8, 2.1, 3.0, 2.4, 3.0, 2.1];
+  var rIn = 0.55, tipHalf = 0.05, valleyHalf = Math.PI / N;
+  var shape = new THREE.Shape(), first = true;
+  function pt(r, ang) {
+    var x = Math.cos(ang) * r, y = Math.sin(ang) * r;
+    if (first) { shape.moveTo(x, y); first = false; } else shape.lineTo(x, y);
+  }
+  for (var i = 0; i < N; i++) {
+    var a = (Math.PI * 2 * i) / N + 0.13, L = lens[i];
+    pt(rIn, a - valleyHalf);          // vadi
+    pt(L * 0.97, a - tipHalf);        // ucun sol omzu
+    pt(L, a);                         // uç
+    pt(L * 0.97, a + tipHalf);        // ucun sağ omzu
+  }
+  shape.closePath();
+  var geo = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.9, bevelEnabled: true, bevelThickness: 0.16, bevelSize: 0.1, bevelSegments: 5, curveSegments: 4
+  });
+  geo.translate(0, 0, -0.45);
+  geo.computeVertexNormals();
+  var mat = new THREE.MeshStandardMaterial({ color: 0xe8743f, metalness: 0.55, roughness: 0.28, flatShading: false });
+  var star = new THREE.Mesh(geo, mat);
+  logo.add(star);
+  // Hafif parıltı: arkada büyük, soluk bir halka
+  var halo = new THREE.Mesh(new THREE.RingGeometry(3.6, 3.65, 96), new THREE.MeshBasicMaterial({ color: 0x4a2a1c, side: THREE.DoubleSide }));
+  halo.position.z = -1.2;
+  scene.add(halo);
+  scene.add(logo);
+
+  // Etkileşim
+  var dragging = false, lastX = 0, lastY = 0, velX = 0, tiltX = 0.18;
+  function down(e) { dragging = true; lastX = e.clientX; lastY = e.clientY; }
+  function move(e) {
+    if (!dragging) return;
+    velX = (e.clientX - lastX) * 0.01; logo.rotation.y += velX;
+    tiltX = Math.max(-0.9, Math.min(0.9, tiltX + (e.clientY - lastY) * 0.006));
+    lastX = e.clientX; lastY = e.clientY;
+  }
+  function up_() { dragging = false; }
+  canvas.addEventListener('pointerdown', down);
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up_);
+
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var spin = reduce ? 0.002 : 0.012;
+
+  function resize() {
+    var w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.position.z = w / h < 0.8 ? 15 : 11; // dar ekranda uzaklaş
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize); resize();
+
+  var t = 0;
+  function frame() {
+    t += 0.016;
+    if (!dragging) logo.rotation.y += spin;
+    logo.rotation.x += (tiltX + Math.sin(t * 0.6) * 0.08 - logo.rotation.x) * 0.05;
+    logo.position.y = Math.sin(t * 0.9) * 0.12;
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
